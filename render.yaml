@@ -1,0 +1,30 @@
+# Render Blueprint — deploys the FastAPI backend on the free tier.
+# Push this file at the repo root; on Render click "New +" → "Blueprint" → pick this repo.
+services:
+  - type: web
+    name: fb-ideation-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /api/v1/health
+    autoDeploy: true
+    envVars:
+      # SQLite lives on the ephemeral disk — data resets on redeploy (fine for MVP).
+      - key: DATABASE_URL
+        value: sqlite+aiosqlite:///./data/app.db
+      - key: LLM_BASE_URL
+        value: https://api.groq.com/openai/v1
+      - key: LLM_MODEL
+        value: llama-3.3-70b-versatile
+      # Set these in the Render dashboard (they are marked sync:false so Render will prompt).
+      - key: LLM_API_KEY
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+      - key: TRENDS_MCP_API_KEY
+        sync: false
+      - key: LLM_TIMEOUT_SECONDS
+        value: "120"
+      - key: RATE_LIMIT_RUN_PER_HOUR
+        value: "10"
