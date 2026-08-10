@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from app.agents.nodes._helpers import compact_json, event, load_prompt
 from app.agents.state import GraphState
+from app.config import settings
 from app.models.agents import ReportOutput
 from app.services.llm import chat_json
 
@@ -195,7 +196,10 @@ def _slim_state_for_report(state: GraphState) -> dict:
 async def report_writer_node(state: GraphState) -> dict:
     prompt = load_prompt("report_writer.md")
     user = compact_json(_slim_state_for_report(state))
-    raw = await chat_json(prompt, user, max_tokens=7000)
+    # Report writer consumes 10 prior agent outputs in one call — the biggest
+    # single request in the pipeline. Route it to the heavy model (llama-3.3-70b,
+    # 12K TPM) rather than the primary gpt-oss-120b (only 8K TPM).
+    raw = await chat_json(prompt, user, max_tokens=7000, model=settings.llm_model_heavy)
     parsed = ReportOutput.model_validate(raw)
     parsed.markdown = _ensure_headings(parsed.markdown)
     return {

@@ -17,6 +17,10 @@ class Settings(BaseSettings):
     llm_base_url: str = "https://api.groq.com/openai/v1"
     llm_model: str = "openai/gpt-oss-120b"
     llm_model_light: str = "llama-3.1-8b-instant"
+    # Used for the report_writer, which needs to consume 10 prior agent outputs
+    # in one call. Llama 3.3 70B gives us 12K TPM (vs gpt-oss-120b's 8K) which
+    # fits our slimmed final-report request.
+    llm_model_heavy: str = "llama-3.3-70b-versatile"
     llm_api_key: str = ""
     llm_timeout_seconds: int = 180
     # Ceiling per agent output. Kept modest so we fit inside 8K TPM.
