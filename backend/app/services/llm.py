@@ -190,6 +190,31 @@ async def chat_json(
     raise ValueError(f"LLM returned unparseable JSON after {retries + 1} attempts: {last_snippet}")
 
 
+async def chat_text(
+    system: str,
+    user: str,
+    max_tokens: int | None = None,
+    model: str | None = None,
+) -> str:
+    """Like `chat_json` but returns plain text — no `response_format` constraint.
+
+    Used for the report writer, where the deliverable IS markdown and forcing
+    the model to embed markdown inside a JSON string trips up small models on
+    unescaped quotes/backticks.
+    """
+    active_model = model or settings.llm_model
+    resp = await _create_with_retry(
+        model=active_model,
+        messages=[
+            {"role": "system", "content": system},
+            {"role": "user", "content": user},
+        ],
+        temperature=settings.llm_temperature,
+        max_tokens=max_tokens or settings.llm_max_tokens,
+    )
+    return (resp.choices[0].message.content or "").strip()
+
+
 async def ping_llm() -> bool:
     """Cheap health probe — issues a 1-token completion."""
     try:
