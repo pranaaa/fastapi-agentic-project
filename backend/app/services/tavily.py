@@ -41,7 +41,7 @@ async def _search_one(client: httpx.AsyncClient, keyword: str) -> dict | None:
         "query": f"{keyword} food trend 2026 consumer",
         "search_depth": "basic",
         "topic": "general",
-        "max_results": 5,
+        "max_results": 4,
         "include_answer": True,
         # bias toward recent trend coverage
         "time_range": "year",
@@ -78,16 +78,18 @@ async def search_trends(keywords: list[str]) -> tuple[list[dict], str]:
         if not payload:
             continue
         hits += 1
-        raw_sources = (payload.get("results") or [])[:4]
+        # Trim aggressively — Tavily returns large snippets and we send this
+        # verbatim to the LLM, so every char is a token cost against our TPM cap.
+        raw_sources = (payload.get("results") or [])[:3]
         signals.append(
             {
                 "keyword": kw,
-                "answer": (payload.get("answer") or "").strip()[:600],
+                "answer": (payload.get("answer") or "").strip()[:350],
                 "sources": [
                     {
-                        "title": (s.get("title") or "")[:140],
+                        "title": (s.get("title") or "")[:100],
                         "url": s.get("url") or "",
-                        "snippet": (s.get("content") or "")[:300],
+                        "snippet": (s.get("content") or "")[:180],
                     }
                     for s in raw_sources
                 ],
