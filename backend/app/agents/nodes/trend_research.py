@@ -34,8 +34,9 @@ async def trend_research_node(state: GraphState) -> dict:
             "signal_source": "tavily_web_search" if tavily_signals else ("trends_mcp" if mcp_signals else "none"),
         }
     )
-    # Summarization + light analysis on top of Tavily data — route to the light model.
-    raw = await chat_json(prompt, user, model=settings.llm_model_light)
+    # Real Tavily data can push this near 6K tokens — route to the primary model
+    # (8K TPM headroom) rather than the light model (only 6K TPM).
+    raw = await chat_json(prompt, user)
     parsed = TrendResearchOutput.model_validate(raw)
 
     # If we got real data, override the LLM's self-assessment.
