@@ -16,7 +16,13 @@ services:
       - key: LLM_BASE_URL
         value: https://api.groq.com/openai/v1
       - key: LLM_MODEL
-        value: llama-3.3-70b-versatile
+        value: openai/gpt-oss-120b
+      - key: LLM_MODEL_LIGHT
+        value: llama-3.1-8b-instant
+      - key: LLM_MAX_TOKENS
+        value: "3500"
+      - key: LLM_TEMPERATURE
+        value: "0.4"
       # Set these in the Render dashboard (they are marked sync:false so Render will prompt).
       - key: LLM_API_KEY
         sync: false
@@ -24,7 +30,9 @@ services:
         sync: false
       - key: TRENDS_MCP_API_KEY
         sync: false
+      - key: TAVILY_API_KEY
+        sync: false
       - key: LLM_TIMEOUT_SECONDS
-        value: "120"
+        value: "180"
       - key: RATE_LIMIT_RUN_PER_HOUR
         value: "10"

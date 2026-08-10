@@ -31,6 +31,27 @@ export async function patchSession(
   );
 }
 
+const STEP_ORDER = [
+  "basics",
+  "audience",
+  "geography",
+  "pricing",
+  "idea_details",
+  "goals",
+];
+
+export async function seedWizard(
+  id: string,
+  wizard: Record<string, unknown>,
+): Promise<void> {
+  for (let i = 0; i < STEP_ORDER.length; i++) {
+    const key = STEP_ORDER[i];
+    const data = wizard[key];
+    if (!data) continue;
+    await patchSession(id, i + 1, data);
+  }
+}
+
 export async function getSession(id: string): Promise<SessionState> {
   return json(await fetch(`${API}/api/v1/sessions/${id}`));
 }
@@ -49,6 +70,7 @@ export function streamUrl(id: string): string {
   return `${API}/api/v1/sessions/${id}/stream`;
 }
 
-export function pdfUrl(id: string): string {
-  return `${API}/api/v1/sessions/${id}/export/pdf`;
+export function pdfUrl(id: string, section?: string): string {
+  const base = `${API}/api/v1/sessions/${id}/export/pdf`;
+  return section ? `${base}?section=${encodeURIComponent(section)}` : base;
 }

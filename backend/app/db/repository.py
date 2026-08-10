@@ -71,8 +71,13 @@ class SessionRepository:
         row.agent_outputs_json = {
             "trend_research": state.get("trend_research"),
             "market_fit": state.get("market_fit"),
+            "competitor_deep_dive": state.get("competitor_deep_dive"),
             "product_ideation": state.get("product_ideation"),
+            "unit_economics": state.get("unit_economics"),
+            "brand_naming": state.get("brand_naming"),
+            "compliance_claims": state.get("compliance_claims"),
             "critique": state.get("critique"),
+            "launch_playbook": state.get("launch_playbook"),
         }
         report = state.get("report") or {}
         row.report_markdown = report.get("markdown")

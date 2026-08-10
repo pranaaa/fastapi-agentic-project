@@ -15,6 +15,8 @@ import { StepPricing } from "./step-pricing";
 import { StepIdeaDetails } from "./step-idea-details";
 import { StepGoals } from "./step-goals";
 import { StepReview } from "./step-review";
+import { BrandLockup } from "@/components/brand";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const STEP_TITLES = [
   "Brand basics",
@@ -30,8 +32,9 @@ export function WizardShell() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
+  const initialStep = Math.max(1, Math.min(7, Number(searchParams.get("step")) || 1));
 
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(initialStep);
   const [wizard, setWizard] = useState<WizardData>({});
   const [loading, setLoading] = useState(false);
 
@@ -164,17 +167,25 @@ export function WizardShell() {
   }
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-3xl flex-col px-6 py-10">
-      <button
-        onClick={() => router.push("/")}
-        className="mb-8 self-start text-sm text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
-      >
-        ← Home
-      </button>
+    <div className="mx-auto flex min-h-screen max-w-3xl flex-col px-6 py-8">
+      <nav className="mb-10 flex items-center justify-between">
+        <BrandLockup />
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => router.push("/")}
+            className="text-sm text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
+          >
+            ← Home
+          </button>
+          <ThemeToggle />
+        </div>
+      </nav>
 
-      <div className="mb-6 space-y-2">
+      <div className="mb-6 space-y-3">
         <div className="flex items-baseline justify-between">
-          <h1 className="text-2xl font-bold">{STEP_TITLES[step - 1]}</h1>
+          <h1 className="font-serif text-3xl tracking-tight">
+            {STEP_TITLES[step - 1]}
+          </h1>
           <span className="text-sm text-[hsl(var(--muted-foreground))]">
             Step {step} of 7
           </span>

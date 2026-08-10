@@ -2,11 +2,8 @@ from __future__ import annotations
 
 from typing import Annotated, TypedDict
 
-from langgraph.graph.message import add_messages  # noqa: F401 - kept for parity if needed
 
-
-def _merge(existing, new):
-    """Reducer for the events list — always concatenate."""
+def _merge_events(existing, new):
     if existing is None:
         return list(new or [])
     return list(existing) + list(new or [])
@@ -18,8 +15,13 @@ class GraphState(TypedDict, total=False):
     brand_brief: dict
     trend_research: dict
     market_fit: dict
+    competitor_deep_dive: dict
     product_ideation: dict
+    unit_economics: dict
+    brand_naming: dict
     critique: dict
+    compliance_claims: dict
+    launch_playbook: dict
     report: dict
-    events: Annotated[list[dict], _merge]
+    events: Annotated[list[dict], _merge_events]
     error: str | None

@@ -192,20 +192,68 @@ async def get_report(session_id: str, db: AsyncSession = Depends(get_db)):
     )
 
 
+SECTION_TITLES = {
+    "executive_summary": "Executive Summary",
+    "idea_snapshot": "Idea Snapshot",
+    "target_customer": "Target Customer & Occasion",
+    "trend_signals": "Trend Signals",
+    "competitive_landscape": "Competitive Landscape",
+    "products": "Recommended Products",
+    "positioning": "Positioning & Differentiation",
+    "brand_naming": "Brand Naming & Verbal Identity",
+    "unit_economics": "Unit Economics Snapshot",
+    "compliance": "Compliance & Claims Review",
+    "gtm_playbook": "Go-to-Market Playbook (30 / 60 / 90 days)",
+    "risks": "Risks & Kill Criteria",
+    "tweaks": "Suggested Tweaks to Your Original Idea",
+    "contrarian_bets": "Contrarian Bets",
+    "this_week": "What To Do This Week",
+    "appendix": "Data Sources & Methodology",
+}
+
+
 @router.get("/{session_id}/export/pdf")
-async def export_pdf(session_id: str, db: AsyncSession = Depends(get_db)):
+async def export_pdf(
+    session_id: str,
+    section: str | None = None,
+    db: AsyncSession = Depends(get_db),
+):
+    """Export the full report OR a single deliverable section as PDF.
+
+    Pass `?section=executive_summary` (or any key in SECTION_TITLES) to get just
+    that deliverable. No section = full report.
+    """
     repo = SessionRepository(db)
     row = await repo.get(session_id)
     if not row:
         raise HTTPException(404, "session not found")
     if not row.report_markdown:
         raise HTTPException(400, "Report not ready")
+
+    if section:
+        sections = row.report_sections_json or {}
+        if section not in SECTION_TITLES:
+            raise HTTPException(400, f"unknown section '{section}'")
+        body = sections.get(section)
+        if not body:
+            raise HTTPException(404, f"section '{section}' has no content in this report")
+        brand = (row.brand_brief_json or {}).get("brand_name") or "Menu Muse"
+        title = SECTION_TITLES[section]
+        md = f"# {brand} — {title}\n\n{body}"
+        filename_suffix = section
+    else:
+        md = row.report_markdown
+        filename_suffix = "full"
+
     try:
-        pdf_bytes = markdown_to_pdf(row.report_markdown)
+        pdf_bytes = markdown_to_pdf(md)
     except Exception as e:
         raise HTTPException(500, f"PDF generation failed: {e}")
+
     return Response(
         content=pdf_bytes,
         media_type="application/pdf",
-        headers={"Content-Disposition": f'attachment; filename="fb-ideation-{session_id[:8]}.pdf"'},
+        headers={
+            "Content-Disposition": f'attachment; filename="menu-muse-{session_id[:8]}-{filename_suffix}.pdf"'
+        },
     )
