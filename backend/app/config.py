@@ -4,23 +4,19 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     database_url: str = "sqlite+aiosqlite:///./data/app.db"
 
-    # LLM (defaults target Groq's free tier; override for Ollama locally).
+    # LLM defaults target Groq's free tier; override for Ollama or other
+    # OpenAI-compatible endpoints via env vars.
     #
-    # Free-tier budget math (per Groq):
-    #   openai/gpt-oss-120b       200K TPD · 8K TPM  → primary heavy analytical model
-    #   llama-3.3-70b-versatile   100K TPD · 12K TPM → alt heavy model with more TPM headroom
-    #   llama-3.1-8b-instant      500K TPD · 6K TPM  → light model for short structured tasks
+    # Groq's live catalog as of Aug 2026 (all Llama/Mixtral models were removed):
+    #   openai/gpt-oss-120b      131K ctx · 8K TPM  · 200K TPD  → flagship, current primary
+    #   openai/gpt-oss-20b       131K ctx · 8K TPM  · 200K TPD  → smaller/faster
+    #   qwen/qwen3.6-27b         131K ctx · 8K TPM  · 200K TPD  → different provider, fresh pool
+    #   groq/compound(-mini)     131K ctx                       → Groq proprietary bundled
     #
-    # We route lightweight agents (clarifier, trend_research, brand_naming) to
-    # LLM_MODEL_LIGHT so their small requests don't eat into the heavy model's
-    # daily budget. Everything else uses LLM_MODEL.
+    # Model routing is disabled in the POC (all agents use LLM_MODEL). The
+    # `_light`/`_heavy` keys are kept as env hooks for future re-enabling.
     llm_base_url: str = "https://api.groq.com/openai/v1"
-    # Primary model. Fresh daily budget (200K TPD) and same TPM as 120b — used
-    # after 120b's TPD got exhausted from heavy testing. Swap back to
-    # `openai/gpt-oss-120b` for higher-quality reasoning once budgets reset.
-    llm_model: str = "openai/gpt-oss-20b"
-    # (Legacy — was llama-3.1-8b-instant but Groq removed that model in mid-2026.
-    # Default now matches primary so unset/stale env vars don't break things.)
+    llm_model: str = "openai/gpt-oss-120b"
     llm_model_light: str = "openai/gpt-oss-20b"
     llm_model_heavy: str = "openai/gpt-oss-120b"
     llm_api_key: str = ""
