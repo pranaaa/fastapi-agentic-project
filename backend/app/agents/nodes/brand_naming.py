@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from app.agents.nodes._helpers import compact_json, event, load_prompt
 from app.agents.state import GraphState
-from app.config import settings
 from app.models.agents import BrandNamingOutput
 from app.services.llm import chat_json
 
@@ -22,8 +21,7 @@ async def brand_naming_node(state: GraphState) -> dict:
             "market_fit": market_slim,
         }
     )
-    # Brainstorm-y task with short output — route to the light model.
-    raw = await chat_json(prompt, user, model=settings.llm_model_light)
+    raw = await chat_json(prompt, user)
     parsed = BrandNamingOutput.model_validate(raw)
     return {
         "brand_naming": parsed.model_dump(),

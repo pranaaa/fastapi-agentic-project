@@ -19,7 +19,9 @@ class Settings(BaseSettings):
     # after 120b's TPD got exhausted from heavy testing. Swap back to
     # `openai/gpt-oss-120b` for higher-quality reasoning once budgets reset.
     llm_model: str = "openai/gpt-oss-20b"
-    llm_model_light: str = "llama-3.1-8b-instant"
+    # (Legacy — was llama-3.1-8b-instant but Groq removed that model in mid-2026.
+    # Default now matches primary so unset/stale env vars don't break things.)
+    llm_model_light: str = "openai/gpt-oss-20b"
     llm_model_heavy: str = "openai/gpt-oss-120b"
     llm_api_key: str = ""
     llm_timeout_seconds: int = 180
